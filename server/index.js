@@ -12,7 +12,7 @@ import { notFound, errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 
-// Railway está detrás de un proxy: necesario para ver la IP real
+// Derrière le proxy de Vercel : nécessaire pour voir la vraie IP
 app.set('trust proxy', 1)
 
 const origins = (process.env.CLIENT_URL || 'http://localhost:5173')
@@ -34,6 +34,11 @@ app.use('/api/usuarios', authenticate, authorize('admin'), usuarios)
 app.use(notFound)
 app.use(errorHandler)
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`API en el puerto ${process.env.PORT || 3000}`)
-)
+// En local on écoute un port ; sur Vercel, c'est l'export par défaut qui sert
+if (!process.env.VERCEL) {
+  app.listen(process.env.PORT || 3000, () =>
+    console.log(`API en http://localhost:${process.env.PORT || 3000}`)
+  )
+}
+
+export default app
