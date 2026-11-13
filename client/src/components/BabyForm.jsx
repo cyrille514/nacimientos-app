@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button, Field, Input, Select } from './ui'
 
 const toForm = (b) => ({
   nombre: b?.nombre ?? '',
@@ -34,65 +35,48 @@ export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'G
     setSaving(false)
   }
 
-  const input = 'border rounded p-2 w-full bg-white'
-  const label = 'text-sm text-gray-600'
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <label className={label}>Nombre (opcional)</label>
-          <input className={input} name="nombre" value={form.nombre} onChange={handleChange} />
-        </div>
-        <div>
-          <label className={label}>Sexo</label>
-          <select className={input} name="sexo" value={form.sexo} onChange={handleChange}>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Field label="Nombre (opcional)">
+          <Input name="nombre" value={form.nombre} onChange={handleChange} />
+        </Field>
+        <Field label="Sexo">
+          <Select name="sexo" value={form.sexo} onChange={handleChange}>
             <option value="F">Niña</option>
             <option value="M">Niño</option>
             <option value="I">Indeterminado</option>
-          </select>
-        </div>
-        <div>
-          <label className={label}>Estado</label>
-          <select className={input} name="estado" value={form.estado} onChange={handleChange}>
+          </Select>
+        </Field>
+        <Field label="Estado">
+          <Select name="estado" value={form.estado} onChange={handleChange}>
             <option value="vivo">Vivo</option>
             <option value="fallecido">Fallecido</option>
-          </select>
-        </div>
-        <div>
-          <label className={label}>Peso (g)</label>
-          <input className={input} type="number" name="pesoG" min="300" max="7000" value={form.pesoG} onChange={handleChange} required />
-        </div>
-        <div>
-          <label className={label}>Talla (cm)</label>
-          <input className={input} type="number" name="tallaCm" min="20" max="70" step="0.1" value={form.tallaCm} onChange={handleChange} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={label}>Apgar 1'</label>
-            <input className={input} type="number" name="apgar1" min="0" max="10" value={form.apgar1} onChange={handleChange} />
-          </div>
-          <div>
-            <label className={label}>Apgar 5'</label>
-            <input className={input} type="number" name="apgar5" min="0" max="10" value={form.apgar5} onChange={handleChange} />
-          </div>
+          </Select>
+        </Field>
+        <Field label="Peso (g)">
+          <Input type="number" name="pesoG" min="300" max="7000" value={form.pesoG} onChange={handleChange} required />
+        </Field>
+        <Field label="Talla (cm)">
+          <Input type="number" name="tallaCm" min="20" max="70" step="0.1" value={form.tallaCm} onChange={handleChange} />
+        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Apgar 1'">
+            <Input type="number" name="apgar1" min="0" max="10" value={form.apgar1} onChange={handleChange} />
+          </Field>
+          <Field label="Apgar 5'">
+            <Input type="number" name="apgar5" min="0" max="10" value={form.apgar5} onChange={handleChange} />
+          </Field>
         </div>
       </div>
 
       <div className="flex gap-3">
-        <button
-          disabled={saving}
-          className="bg-pink-600 text-white rounded px-4 py-2 hover:bg-pink-700 disabled:opacity-50"
-        >
-          {saving ? 'Guardando...' : submitLabel}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="border rounded px-4 py-2 hover:bg-gray-100"
-        >
+        <Button type="submit" loading={saving}>
+          {submitLabel}
+        </Button>
+        <Button variant="secondary" onClick={onCancel}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   )

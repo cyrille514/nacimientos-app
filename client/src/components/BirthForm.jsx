@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button, Field, FormSection, Input, Plus, Select, Textarea } from './ui'
 
 const initial = {
   nombre: '',
@@ -49,75 +50,77 @@ export default function BirthForm({ onAdd, medicos }) {
     if (ok) setForm(initial)
   }
 
-  const input = 'border rounded p-2 w-full bg-white'
-  const label = 'text-sm text-gray-600'
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-4 rounded shadow space-y-4"
-    >
-      <h2 className="font-semibold text-pink-600">Madre</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input className={input} name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
-        <input className={input} name="apellidos" placeholder="Apellidos" value={form.apellidos} onChange={handleChange} required />
-        <input className={input} name="documentoId" placeholder="Documento de identidad" value={form.documentoId} onChange={handleChange} required />
-        <div>
-          <label className={label}>Fecha de nacimiento de la madre</label>
-          <input className={input} type="date" name="fechaNacimiento" value={form.fechaNacimiento} onChange={handleChange} required />
-        </div>
-        <input className={input} name="telefono" maxLength="30" placeholder="Teléfono (opcional)" value={form.telefono} onChange={handleChange} />
-        <input className={input} name="direccion" maxLength="200" placeholder="Dirección (opcional)" value={form.direccion} onChange={handleChange} />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <FormSection title="Madre">
+        <Field label="Nombre">
+          <Input name="nombre" value={form.nombre} onChange={handleChange} required />
+        </Field>
+        <Field label="Apellidos">
+          <Input name="apellidos" value={form.apellidos} onChange={handleChange} required />
+        </Field>
+        <Field label="Documento de identidad">
+          <Input name="documentoId" value={form.documentoId} onChange={handleChange} required />
+        </Field>
+        <Field label="Fecha de nacimiento">
+          <Input type="date" name="fechaNacimiento" value={form.fechaNacimiento} onChange={handleChange} required />
+        </Field>
+        <Field label="Teléfono (opcional)">
+          <Input name="telefono" maxLength={30} value={form.telefono} onChange={handleChange} />
+        </Field>
+        <Field label="Dirección (opcional)">
+          <Input name="direccion" maxLength={200} value={form.direccion} onChange={handleChange} />
+        </Field>
+      </FormSection>
 
-      <h2 className="font-semibold text-pink-600">Parto</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className={label}>Fecha y hora</label>
-          <input className={input} type="datetime-local" name="fechaHora" value={form.fechaHora} onChange={handleChange} required />
-        </div>
-        <div>
-          <label className={label}>Médico responsable</label>
-          <select className={input} name="medicoId" value={form.medicoId} onChange={handleChange} required>
+      <FormSection title="Parto" className="border-t border-line pt-6">
+        <Field label="Fecha y hora">
+          <Input type="datetime-local" name="fechaHora" value={form.fechaHora} onChange={handleChange} required />
+        </Field>
+        <Field label="Médico responsable">
+          <Select name="medicoId" value={form.medicoId} onChange={handleChange} required>
             <option value="">Selecciona un médico</option>
             {medicos.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.nombre}{m.especialidad ? ` (${m.especialidad})` : ''}
+                {m.nombre}
+                {m.especialidad ? ` (${m.especialidad})` : ''}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className={label}>Tipo de parto</label>
-          <select className={input} name="tipoParto" value={form.tipoParto} onChange={handleChange}>
+          </Select>
+        </Field>
+        <Field label="Tipo de parto">
+          <Select name="tipoParto" value={form.tipoParto} onChange={handleChange}>
             <option value="vaginal">Vaginal</option>
             <option value="cesarea">Cesárea</option>
             <option value="instrumental">Instrumental</option>
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label className={label}>Observaciones (opcional)</label>
-          <textarea className={input} rows="3" name="observaciones" maxLength="1000" value={form.observaciones} onChange={handleChange} />
-        </div>
-      </div>
+          </Select>
+        </Field>
+        <Field label="Observaciones (opcional)" className="sm:col-span-2">
+          <Textarea name="observaciones" rows={3} maxLength={1000} value={form.observaciones} onChange={handleChange} />
+        </Field>
+      </FormSection>
 
-      <h2 className="font-semibold text-pink-600">Recién nacido</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <input className={input} name="bebeNombre" placeholder="Nombre (opcional)" value={form.bebeNombre} onChange={handleChange} />
-        <select className={input} name="sexo" value={form.sexo} onChange={handleChange}>
-          <option value="F">Niña</option>
-          <option value="M">Niño</option>
-          <option value="I">Indeterminado</option>
-        </select>
-        <input className={input} type="number" name="pesoG" min="300" max="7000" placeholder="Peso (g)" value={form.pesoG} onChange={handleChange} required />
-      </div>
+      <FormSection title="Recién nacido" columns={3} className="border-t border-line pt-6">
+        <Field label="Nombre (opcional)">
+          <Input name="bebeNombre" value={form.bebeNombre} onChange={handleChange} />
+        </Field>
+        <Field label="Sexo">
+          <Select name="sexo" value={form.sexo} onChange={handleChange}>
+            <option value="F">Niña</option>
+            <option value="M">Niño</option>
+            <option value="I">Indeterminado</option>
+          </Select>
+        </Field>
+        <Field label="Peso (g)">
+          <Input type="number" name="pesoG" min="300" max="7000" value={form.pesoG} onChange={handleChange} required />
+        </Field>
+      </FormSection>
 
-      <button
-        disabled={saving}
-        className="w-full bg-pink-600 text-white rounded p-2 hover:bg-pink-700 disabled:opacity-50"
-      >
-        {saving ? 'Guardando...' : 'Registrar nacimiento'}
-      </button>
+      <div className="flex justify-end border-t border-line pt-6">
+        <Button type="submit" icon={Plus} loading={saving}>
+          Registrar nacimiento
+        </Button>
+      </div>
     </form>
   )
 }

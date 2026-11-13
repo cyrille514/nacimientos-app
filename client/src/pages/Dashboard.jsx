@@ -1,13 +1,5 @@
 import useBirths from '../hooks/useBirths'
-
-function Card({ title, value }) {
-  return (
-    <div className="bg-white rounded shadow p-4">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-3xl font-bold text-pink-600">{value}</p>
-    </div>
-  )
-}
+import { Alert, Baby, PageHeader, Scale, Spinner, StatCard, Stethoscope, Users } from '../components/ui'
 
 export default function Dashboard() {
   const { births, loading, error } = useBirths()
@@ -21,20 +13,21 @@ export default function Dashboard() {
     : 0
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold mb-4">Panel</h1>
+    <>
+      <PageHeader title="Panel" description="Resumen de los nacimientos registrados" />
 
-      {error && (
-        <p className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</p>
+      {error && <Alert className="mb-6">{error}</Alert>}
+
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Partos" value={births.length} icon={Baby} hint={`${bebes.length} recién nacidos`} />
+          <StatCard label="Niñas / Niños" value={`${ninas} / ${ninos}`} icon={Users} />
+          <StatCard label="Cesáreas" value={cesareas} icon={Stethoscope} />
+          <StatCard label="Peso medio" value={`${pesoMedio} g`} icon={Scale} />
+        </div>
       )}
-      {loading && <p className="text-gray-500 mb-4">Cargando...</p>}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card title="Partos" value={births.length} />
-        <Card title="Niñas / Niños" value={`${ninas} / ${ninos}`} />
-        <Card title="Cesáreas" value={cesareas} />
-        <Card title="Peso medio (g)" value={pesoMedio} />
-      </div>
-    </section>
+    </>
   )
 }

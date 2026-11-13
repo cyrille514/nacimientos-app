@@ -1,56 +1,86 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { PARTO, SEXO, formatDateTime } from '../constants/labels'
+import {
+  Baby,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Eye,
+  Search,
+  TBody,
+  Table,
+  THead,
+  Td,
+  Th,
+  Tr,
+  Trash2,
+} from './ui'
 
-const parto = { vaginal: 'Vaginal', cesarea: 'Cesárea', instrumental: 'Instrumental' }
-const sexo = { F: 'Niña', M: 'Niño', I: 'Indeterminado' }
-
-export default function BirthTable({ births, onDelete }) {
+export default function BirthTable({ births, onDelete, filtered = false }) {
   const { user } = useAuth()
 
-  if (births.length === 0)
-    return <p className="text-gray-500 mt-6">No hay nacimientos registrados.</p>
+  if (births.length === 0) {
+    return (
+      <Card>
+        <EmptyState
+          icon={filtered ? Search : Baby}
+          title={filtered ? 'Sin resultados' : 'Aún no hay nacimientos'}
+          description={
+            filtered
+              ? 'Ningún nacimiento coincide con los filtros aplicados.'
+              : 'Registra el primero con el formulario de arriba.'
+          }
+        />
+      </Card>
+    )
+  }
 
   return (
-    <div className="mt-6 overflow-x-auto">
-      <table className="w-full bg-white rounded shadow text-left text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">Fecha</th>
-            <th className="p-2">Madre</th>
-            <th className="p-2">Médico</th>
-            <th className="p-2">Recién nacido</th>
-            <th className="p-2">Parto</th>
-            <th className="p-2"></th>
-          </tr>
-        </thead>
-        <tbody>
+    <Card flush>
+      <Table>
+        <THead>
+          <Th>Fecha</Th>
+          <Th>Madre</Th>
+          <Th>Médico</Th>
+          <Th>Recién nacido</Th>
+          <Th>Parto</Th>
+          <Th className="text-right">Acciones</Th>
+        </THead>
+        <TBody>
           {births.map((b) => (
-            <tr key={b.id} className="border-t">
-              <td className="p-2">{new Date(b.fechaHora).toLocaleString('es-ES')}</td>
-              <td className="p-2">{b.madre}</td>
-              <td className="p-2">{b.medico}</td>
-              <td className="p-2">
+            <Tr key={b.id}>
+              <Td className="whitespace-nowrap">{formatDateTime(b.fechaHora)}</Td>
+              <Td className="font-medium">{b.madre}</Td>
+              <Td>{b.medico}</Td>
+              <Td>
                 {b.recienNacidos.map((r) => (
                   <div key={r.id}>
-                    {r.nombre ? `${r.nombre} · ` : ''}{sexo[r.sexo]} · {r.pesoG} g
+                    <span className="font-medium">{r.nombre || 'Sin nombre'}</span>
+                    <span className="text-ink-muted">
+                      {' '}· {SEXO[r.sexo]} · {r.pesoG} g
+                    </span>
                   </div>
                 ))}
-              </td>
-              <td className="p-2">{parto[b.tipoParto]}</td>
-              <td className="p-2 space-x-3 whitespace-nowrap">
-                <Link to={`/nacimientos/${b.id}`} className="text-pink-600 hover:underline">
+              </Td>
+              <Td>
+                <Badge>{PARTO[b.tipoParto]}</Badge>
+              </Td>
+              <Td className="whitespace-nowrap text-right">
+                <Button as={Link} to={`/nacimientos/${b.id}`} variant="ghost" size="sm" icon={Eye}>
                   Ver
-                </Link>
+                </Button>
                 {user?.rol === 'admin' && (
-                  <button onClick={() => onDelete(b)} className="text-red-600 hover:underline">
+                  <Button variant="dangerGhost" size="sm" icon={Trash2} onClick={() => onDelete(b.id)}>
                     Eliminar
-                  </button>
+                  </Button>
                 )}
-              </td>
-            </tr>
+              </Td>
+            </Tr>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TBody>
+      </Table>
+    </Card>
   )
 }

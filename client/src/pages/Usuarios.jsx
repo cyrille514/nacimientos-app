@@ -3,12 +3,29 @@ import { useAuth } from '../context/AuthContext'
 import * as api from '../services/usuariosService'
 import ConfirmDialog from '../components/ConfirmDialog'
 import PasswordDialog from '../components/PasswordDialog'
-
-const ROLES = {
-  admin: 'Administrador',
-  medico: 'Médico',
-  administrativo: 'Administrativo',
-}
+import { ROLES, formatDateTime } from '../constants/labels'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Field,
+  FormSection,
+  Input,
+  KeyRound,
+  Plus,
+  Select,
+  Spinner,
+  TBody,
+  Table,
+  THead,
+  Td,
+  Th,
+  Tr,
+  PageHeader,
+  UserCheck,
+  UserX,
+} from '../components/ui'
 
 const initial = {
   email: '',
@@ -32,7 +49,7 @@ export default function Usuarios() {
   const [toDeactivate, setToDeactivate] = useState(null)
   const [deactivating, setDeactivating] = useState(false)
 
-  const [toReset, setToReset] = useState(null) // usuario cuya contraseña se cambia
+  const [toReset, setToReset] = useState(null)
   const [resetting, setResetting] = useState(false)
   const [resetError, setResetError] = useState('')
 
@@ -131,123 +148,134 @@ export default function Usuarios() {
     setToDeactivate(null)
   }
 
-  const input = 'border rounded p-2 w-full bg-white'
   const esMedico = form.rol === 'medico'
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold mb-4">Usuarios</h1>
+    <>
+      <PageHeader title="Usuarios" description="Gestiona las cuentas y los roles de acceso" />
 
-      {error && (
-        <p className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</p>
-      )}
+      {error && <Alert className="mb-6">{error}</Alert>}
       {ok && (
-        <p className="bg-green-100 text-green-700 p-2 rounded mb-4 text-sm">{ok}</p>
+        <Alert tone="success" className="mb-6">
+          {ok}
+        </Alert>
       )}
 
-      <form onSubmit={handleCreate} className="bg-white p-4 rounded shadow space-y-3">
-        <h2 className="font-semibold text-pink-600">Nuevo usuario</h2>
+      <div className="space-y-6">
+        <Card title="Nuevo usuario">
+          <form onSubmit={handleCreate} className="space-y-4">
+            <FormSection title="Cuenta">
+              <Field label="Email">
+                <Input type="email" name="email" autoComplete="off" value={form.email} onChange={handleChange} required />
+              </Field>
+              <Field label="Contraseña inicial" hint="Mínimo 8 caracteres, con mayúscula, minúscula y número.">
+                <Input type="password" name="password" autoComplete="new-password" value={form.password} onChange={handleChange} required />
+              </Field>
+              <Field label="Nombre">
+                <Input name="nombre" value={form.nombre} onChange={handleChange} required />
+              </Field>
+              <Field label="Rol">
+                <Select name="rol" value={form.rol} onChange={handleChange}>
+                  <option value="administrativo">Administrativo</option>
+                  <option value="medico">Médico</option>
+                  <option value="admin">Administrador</option>
+                </Select>
+              </Field>
+            </FormSection>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input className={input} type="email" name="email" placeholder="Email" autoComplete="off" value={form.email} onChange={handleChange} required />
-          <input className={input} type="password" name="password" placeholder="Contraseña inicial" autoComplete="new-password" value={form.password} onChange={handleChange} required />
-          <input className={input} name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
-          <select className={input} name="rol" value={form.rol} onChange={handleChange}>
-            <option value="administrativo">Administrativo</option>
-            <option value="medico">Médico</option>
-            <option value="admin">Administrador</option>
-          </select>
+            {esMedico && (
+              <FormSection title="Datos del médico" columns={3} className="border-t border-line pt-4">
+                <Field label="Apellidos">
+                  <Input name="apellidos" value={form.apellidos} onChange={handleChange} required />
+                </Field>
+                <Field label="Nº de colegiado">
+                  <Input name="numColegiado" value={form.numColegiado} onChange={handleChange} required />
+                </Field>
+                <Field label="Especialidad (opcional)">
+                  <Input name="especialidad" value={form.especialidad} onChange={handleChange} />
+                </Field>
+              </FormSection>
+            )}
 
-          {esMedico && (
-            <>
-              <input className={input} name="apellidos" placeholder="Apellidos" value={form.apellidos} onChange={handleChange} required />
-              <input className={input} name="numColegiado" placeholder="Nº de colegiado" value={form.numColegiado} onChange={handleChange} required />
-              <input className={input} name="especialidad" placeholder="Especialidad (opcional)" value={form.especialidad} onChange={handleChange} />
-            </>
-          )}
-        </div>
+            <div className="flex justify-end">
+              <Button type="submit" icon={Plus} loading={saving}>
+                Crear usuario
+              </Button>
+            </div>
+          </form>
+        </Card>
 
-        <p className="text-xs text-gray-500">
-          Contraseña: mínimo 8 caracteres, con mayúscula, minúscula y número.
-        </p>
-
-        <button
-          disabled={saving}
-          className="w-full bg-pink-600 text-white rounded p-2 hover:bg-pink-700 disabled:opacity-50"
-        >
-          {saving ? 'Creando...' : 'Crear usuario'}
-        </button>
-      </form>
-
-      {loading ? (
-        <p className="text-gray-500 mt-6">Cargando...</p>
-      ) : (
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full bg-white rounded shadow text-left text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2">Nombre</th>
-                <th className="p-2">Email</th>
-                <th className="p-2">Rol</th>
-                <th className="p-2">Estado</th>
-                <th className="p-2">Último acceso</th>
-                <th className="p-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => {
-                const self = u.id === me.id
-                return (
-                  <tr key={u.id} className="border-t">
-                    <td className="p-2">{u.nombre}{self && ' (tú)'}</td>
-                    <td className="p-2">{u.email}</td>
-                    <td className="p-2">
-                      {self || u.rol === 'medico' ? (
-                        ROLES[u.rol]
-                      ) : (
-                        <select
-                          className="border rounded p-1 bg-white"
-                          value={u.rol}
-                          onChange={(e) =>
-                            run(() => api.updateUser(u.id, { rol: e.target.value }), 'Rol actualizado')
-                          }
-                        >
-                          <option value="administrativo">Administrativo</option>
-                          <option value="admin">Administrador</option>
-                        </select>
-                      )}
-                    </td>
-                    <td className="p-2">
-                      <span className={`px-2 py-0.5 rounded text-xs ${u.activo ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
-                        {u.activo ? 'Activo' : 'Desactivado'}
-                      </span>
-                    </td>
-                    <td className="p-2">
-                      {u.ultimoAcceso ? new Date(u.ultimoAcceso).toLocaleString('es-ES') : '—'}
-                    </td>
-                    <td className="p-2 space-x-3 whitespace-nowrap">
-                      <button
-                        onClick={() => openReset(u)}
-                        className="text-pink-600 hover:underline"
-                      >
-                        Contraseña
-                      </button>
-                      {!self && (
-                        <button
-                          onClick={() => handleToggle(u)}
-                          className="text-red-600 hover:underline"
-                        >
-                          {u.activo ? 'Desactivar' : 'Activar'}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+        {loading ? (
+          <Spinner />
+        ) : (
+          <Card flush>
+            <Table>
+              <THead>
+                <Th>Nombre</Th>
+                <Th>Email</Th>
+                <Th>Rol</Th>
+                <Th>Estado</Th>
+                <Th>Último acceso</Th>
+                <Th className="text-right">Acciones</Th>
+              </THead>
+              <TBody>
+                {users.map((u) => {
+                  const self = u.id === me.id
+                  return (
+                    <Tr key={u.id}>
+                      <Td className="font-medium">
+                        {u.nombre}
+                        {self && <span className="font-normal text-ink-muted"> (tú)</span>}
+                      </Td>
+                      <Td>{u.email}</Td>
+                      <Td>
+                        {self || u.rol === 'medico' ? (
+                          <Badge tone={u.rol === 'admin' ? 'brand' : 'neutral'}>{ROLES[u.rol]}</Badge>
+                        ) : (
+                          <Select
+                            dense
+                            className="w-auto"
+                            value={u.rol}
+                            onChange={(e) =>
+                              run(() => api.updateUser(u.id, { rol: e.target.value }), 'Rol actualizado')
+                            }
+                          >
+                            <option value="administrativo">Administrativo</option>
+                            <option value="admin">Administrador</option>
+                          </Select>
+                        )}
+                      </Td>
+                      <Td>
+                        <Badge tone={u.activo ? 'success' : 'neutral'}>
+                          {u.activo ? 'Activo' : 'Desactivado'}
+                        </Badge>
+                      </Td>
+                      <Td className="whitespace-nowrap text-ink-muted">
+                        {u.ultimoAcceso ? formatDateTime(u.ultimoAcceso) : '—'}
+                      </Td>
+                      <Td className="whitespace-nowrap text-right">
+                        <Button variant="ghost" size="sm" icon={KeyRound} onClick={() => openReset(u)}>
+                          Contraseña
+                        </Button>
+                        {!self && (
+                          <Button
+                            variant={u.activo ? 'dangerGhost' : 'ghost'}
+                            size="sm"
+                            icon={u.activo ? UserX : UserCheck}
+                            onClick={() => handleToggle(u)}
+                          >
+                            {u.activo ? 'Desactivar' : 'Activar'}
+                          </Button>
+                        )}
+                      </Td>
+                    </Tr>
+                  )
+                })}
+              </TBody>
+            </Table>
+          </Card>
+        )}
+      </div>
 
       <PasswordDialog
         open={toReset !== null}
@@ -276,6 +304,6 @@ export default function Usuarios() {
         onConfirm={confirmDeactivate}
         onCancel={() => setToDeactivate(null)}
       />
-    </section>
+    </>
   )
 }

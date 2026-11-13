@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Alert, Baby, Button, Card, Field, Input } from '../components/ui'
 
 export default function Login() {
   const { user, login } = useAuth()
@@ -26,39 +27,49 @@ export default function Login() {
     }
   }
 
-  const input = 'border rounded p-2 w-full bg-white'
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold text-pink-600">👶 Gestión de Nacimientos</h1>
-        <p className="text-gray-500 text-sm">Inicia sesión para continuar</p>
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-card bg-brand-700 text-white shadow-card">
+            <Baby size={26} />
+          </span>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">
+            Gestión de Nacimientos
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">Inicia sesión para continuar</p>
+        </div>
 
-        {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm">{error}</p>}
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <Alert>{error}</Alert>}
 
-        <input
-          className={input}
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className={input}
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button
-          disabled={loading}
-          className="w-full bg-pink-600 text-white rounded p-2 hover:bg-pink-700 disabled:opacity-50"
-        >
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
+            <Field label="Email">
+              <Input
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Field>
+
+            <Field label="Contraseña">
+              <Input
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Field>
+
+            <Button type="submit" loading={loading} className="w-full">
+              Entrar
+            </Button>
+          </form>
+        </Card>
+      </div>
     </div>
   )
 }

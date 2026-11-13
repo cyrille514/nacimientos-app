@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import { Alert, Button, Check, Field, Input, KeyRound, Modal, ModalFooter, cx } from './ui'
 
-function PasswordForm({ user, loading, error, onSubmit, onCancel }) {
+function PasswordForm({ loading, error, onSubmit, onCancel }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [show, setShow] = useState(false)
@@ -14,118 +15,86 @@ function PasswordForm({ user, loading, error, onSubmit, onCancel }) {
   const valid = rules.every((r) => r.ok)
   const mismatch = confirm !== '' && password !== confirm
   const canSubmit = valid && confirm !== '' && !mismatch && !loading
+  const type = show ? 'text' : 'password'
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (canSubmit) onSubmit(password)
   }
 
-  const input = 'border rounded p-2 w-full bg-white'
-  const type = show ? 'text' : 'password'
-
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Cambiar contraseña</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Nueva contraseña para <span className="font-medium">{user.email}</span>
-        </p>
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <Alert>{error}</Alert>}
 
-      {error && (
-        <p className="bg-red-100 text-red-700 p-2 rounded text-sm">{error}</p>
-      )}
-
-      <div className="space-y-3">
-        <input
-          className={input}
+      <Field label="Nueva contraseña">
+        <Input
           type={type}
-          placeholder="Nueva contraseña"
           autoComplete="new-password"
           maxLength={72}
           autoFocus
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <input
-          className={input}
+      </Field>
+
+      <Field label="Repetir contraseña" error={mismatch ? 'Las contraseñas no coinciden' : undefined}>
+        <Input
           type={type}
-          placeholder="Repetir contraseña"
           autoComplete="new-password"
           maxLength={72}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />
-        {mismatch && (
-          <p className="text-sm text-red-600">Las contraseñas no coinciden</p>
-        )}
+      </Field>
 
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-          Mostrar contraseña
-        </label>
-      </div>
+      <label className="flex items-center gap-2 text-sm text-ink-muted">
+        <input
+          type="checkbox"
+          className="h-4 w-4 rounded border-line accent-brand-700"
+          checked={show}
+          onChange={(e) => setShow(e.target.checked)}
+        />
+        Mostrar contraseña
+      </label>
 
-      <ul className="grid grid-cols-2 gap-1 text-sm">
+      <ul className="grid grid-cols-2 gap-1.5 text-sm">
         {rules.map((r) => (
-          <li key={r.label} className={r.ok ? 'text-green-700' : 'text-gray-500'}>
-            {r.ok ? '✓' : '○'} {r.label}
+          <li
+            key={r.label}
+            className={cx('flex items-center gap-1.5', r.ok ? 'text-success-700' : 'text-ink-subtle')}
+          >
+            <Check size={14} className={r.ok ? '' : 'opacity-30'} />
+            {r.label}
           </li>
         ))}
       </ul>
 
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-          className="border rounded px-4 py-2 hover:bg-gray-100 disabled:opacity-50"
-        >
+      <ModalFooter>
+        <Button variant="secondary" onClick={onCancel} disabled={loading}>
           Cancelar
-        </button>
-        <button
-          disabled={!canSubmit}
-          className="bg-pink-600 text-white rounded px-4 py-2 hover:bg-pink-700 disabled:opacity-50"
-        >
-          {loading ? 'Guardando...' : 'Cambiar contraseña'}
-        </button>
-      </div>
+        </Button>
+        <Button type="submit" disabled={!canSubmit} loading={loading}>
+          Cambiar contraseña
+        </Button>
+      </ModalFooter>
     </form>
   )
 }
 
 export default function PasswordDialog({ open, user, loading, error, onSubmit, onCancel }) {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
-
   return (
-    <dialog
-      ref={ref}
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!loading) onCancel()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current && !loading) onCancel()
-      }}
-      className="m-auto w-full max-w-md rounded-lg p-0 text-gray-800 shadow-xl backdrop:bg-black/50"
+    <Modal
+      open={open}
+      onClose={onCancel}
+      dismissible={!loading}
+      icon={KeyRound}
+      title="Cambiar contraseña"
+      description={user ? `Nueva contraseña para ${user.email}` : ''}
     >
       {/* Se monta solo al abrir: los campos se vacían cada vez */}
       {open && user && (
-        <PasswordForm
-          user={user}
-          loading={loading}
-          error={error}
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-        />
+        <PasswordForm loading={loading} error={error} onSubmit={onSubmit} onCancel={onCancel} />
       )}
-    </dialog>
+    </Modal>
   )
 }

@@ -3,7 +3,7 @@ import { jsPDF } from 'jspdf'
 const SEXO = { F: 'Niña', M: 'Niño', I: 'Indeterminado' }
 const PARTO = { vaginal: 'Vaginal', cesarea: 'Cesárea', instrumental: 'Instrumental' }
 
-const PINK = [219, 39, 119]
+const PINK = [15, 118, 110]
 const GRAY = [100, 100, 100]
 const DARK = [30, 30, 30]
 

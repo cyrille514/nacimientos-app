@@ -10,7 +10,7 @@ export default function ProtectedRoute() {
   return (
     <>
       <Navbar />
-      <main className="max-w-4xl mx-auto p-6">
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
         <Outlet />
       </main>
     </>

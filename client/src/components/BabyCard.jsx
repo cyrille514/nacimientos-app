@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { SEXO } from '../constants/labels'
 import BabyForm from './BabyForm'
-
-const SEXO = { F: 'Niña', M: 'Niño', I: 'Indeterminado' }
+import { Badge, Button, Card, FileDown, Pencil, Trash2 } from './ui'
 
 export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false)
@@ -24,8 +24,7 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
 
   if (editing) {
     return (
-      <div className="bg-white p-4 rounded shadow">
-        <h3 className="font-medium mb-3">Editar recién nacido {index + 1}</h3>
+      <Card title={`Editar recién nacido ${index + 1}`}>
         <BabyForm
           initial={baby}
           submitLabel="Guardar"
@@ -35,47 +34,45 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
             if (ok) setEditing(false)
           }}
         />
-      </div>
+      </Card>
     )
   }
 
   const vivo = baby.estado === 'vivo'
 
   return (
-    <div className="bg-white p-4 rounded shadow flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <p className="font-medium">
-          {index + 1}. {baby.nombre || 'Sin nombre'} · {SEXO[baby.sexo]}
-        </p>
-        <p className="text-sm text-gray-600">
-          Peso: {baby.pesoG} g · Talla: {baby.tallaCm ?? '—'} cm · Apgar 1'/5':{' '}
-          {baby.apgar1 ?? '—'} / {baby.apgar5 ?? '—'}
-        </p>
-        {pdfError && <p className="text-sm text-red-600 mt-1">{pdfError}</p>}
+    <div className="flex flex-wrap items-start justify-between gap-4 rounded-card border border-line bg-surface p-4 shadow-card">
+      <div className="flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-800">
+          {index + 1}
+        </span>
+        <div>
+          <p className="font-medium text-ink">
+            {baby.nombre || 'Sin nombre'}
+            <span className="font-normal text-ink-muted"> · {SEXO[baby.sexo]}</span>
+          </p>
+          <p className="mt-0.5 text-sm text-ink-muted">
+            Peso {baby.pesoG} g · Talla {baby.tallaCm ?? '—'} cm · Apgar {baby.apgar1 ?? '—'} /{' '}
+            {baby.apgar5 ?? '—'}
+          </p>
+          {pdfError && <p className="mt-1 text-sm text-danger-700">{pdfError}</p>}
+        </div>
       </div>
 
-      <div className="flex items-center gap-3 text-sm">
-        <span
-          className={`px-2 py-0.5 rounded text-xs ${vivo ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}
-        >
-          {vivo ? 'Vivo' : 'Fallecido'}
-        </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={vivo ? 'success' : 'neutral'}>{vivo ? 'Vivo' : 'Fallecido'}</Badge>
         {vivo && (
-          <button
-            onClick={downloadCertificate}
-            disabled={generating}
-            className="text-pink-600 hover:underline disabled:opacity-50"
-          >
-            {generating ? 'Generando...' : 'Certificado PDF'}
-          </button>
+          <Button variant="secondary" size="sm" icon={FileDown} loading={generating} onClick={downloadCertificate}>
+            Certificado
+          </Button>
         )}
-        <button onClick={() => setEditing(true)} className="text-pink-600 hover:underline">
+        <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEditing(true)}>
           Editar
-        </button>
+        </Button>
         {canDelete && (
-          <button onClick={onDelete} className="text-red-600 hover:underline">
+          <Button variant="dangerGhost" size="sm" icon={Trash2} onClick={onDelete}>
             Eliminar
-          </button>
+          </Button>
         )}
       </div>
     </div>

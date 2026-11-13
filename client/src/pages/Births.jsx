@@ -5,6 +5,8 @@ import BirthForm from '../components/BirthForm'
 import BirthFilters from '../components/BirthFilters'
 import BirthTable from '../components/BirthTable'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { Alert, Card, PageHeader } from '../components/ui'
+import { formatDate } from '../constants/labels'
 
 const emptyFilters = { q: '', desde: '', hasta: '', medicoId: '', tipoParto: '' }
 
@@ -21,7 +23,7 @@ export default function Births() {
   const [medicos, setMedicos] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [applied, setApplied] = useState(toApi(emptyFilters))
-  const [toDelete, setToDelete] = useState(null) // registro a eliminar
+  const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
   const { births, loading, error, add, remove } = useBirths(applied)
@@ -38,6 +40,10 @@ export default function Births() {
     return () => clearTimeout(t)
   }, [filters])
 
+  const hayFiltros = Object.values(filters).some(Boolean)
+
+  const askDelete = (id) => setToDelete(births.find((b) => b.id === id) ?? null)
+
   const confirmDelete = async () => {
     setDeleting(true)
     await remove(toDelete.id)
@@ -45,55 +51,55 @@ export default function Births() {
     setToDelete(null)
   }
 
-  const hayFiltros = Object.values(filters).some(Boolean)
-
   return (
-    <section>
-      <h1 className="text-2xl font-bold mb-4">Nacimientos</h1>
-
-      {error && (
-        <p className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm">{error}</p>
-      )}
-
-      <BirthForm onAdd={add} medicos={medicos} />
-
-      <BirthFilters
-        filters={filters}
-        onChange={setFilters}
-        onReset={() => setFilters(emptyFilters)}
-        medicos={medicos}
+    <>
+      <PageHeader
+        title="Nacimientos"
+        description="Registra y consulta los nacimientos del centro"
       />
 
-      <p className="text-sm text-gray-500 mt-4">
-        {loading
-          ? 'Cargando...'
-          : `${births.length} resultado${births.length === 1 ? '' : 's'}`}
-      </p>
+      {error && <Alert className="mb-6">{error}</Alert>}
 
-      <div className={loading ? 'opacity-60' : ''}>
-        {!loading && births.length === 0 && hayFiltros ? (
-          <p className="text-gray-500 mt-2">
-            Ningún nacimiento coincide con los filtros.
+      <div className="space-y-6">
+        <Card title="Registrar nacimiento">
+          <BirthForm onAdd={add} medicos={medicos} />
+        </Card>
+
+        <BirthFilters
+          filters={filters}
+          onChange={setFilters}
+          onReset={() => setFilters(emptyFilters)}
+          medicos={medicos}
+        />
+
+        <section>
+          <p className="mb-3 text-sm text-ink-muted">
+            {loading
+              ? 'Cargando...'
+              : `${births.length} resultado${births.length === 1 ? '' : 's'}`}
           </p>
-        ) : (
-          <BirthTable births={births} onDelete={setToDelete} />
-        )}
+          <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+            <BirthTable births={births} onDelete={askDelete} filtered={hayFiltros} />
+          </div>
+        </section>
       </div>
 
       <ConfirmDialog
         open={toDelete !== null}
         title="Eliminar nacimiento"
-        message={`¿Seguro que quieres eliminar el nacimiento de ${
-          toDelete?.madre ?? ''
-        } del ${
-          toDelete ? new Date(toDelete.fechaHora).toLocaleDateString('es-ES') : ''
-        }? Se eliminarán también sus recién nacidos. Esta acción no se puede deshacer.`}
+        message={
+          toDelete
+            ? `¿Eliminar el nacimiento de ${toDelete.madre} del ${formatDate(
+                toDelete.fechaHora
+              )}? Se eliminarán también sus recién nacidos. Esta acción no se puede deshacer.`
+            : ''
+        }
         confirmLabel="Eliminar"
         danger
         loading={deleting}
         onConfirm={confirmDelete}
         onCancel={() => setToDelete(null)}
       />
-    </section>
+    </>
   )
 }
