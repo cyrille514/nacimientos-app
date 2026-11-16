@@ -1,12 +1,29 @@
 import { cx } from './cx'
 
-const columnClasses = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3' }
+const columnClasses = {
+  1: '',
+  2: '@md:grid-cols-2',
+  3: '@md:grid-cols-2 @2xl:grid-cols-3',
+}
 
-export default function FormSection({ title, columns = 2, className = '', children }) {
+export function FieldGrid({ columns = 2, className = '', children }) {
+  return (
+    <div className="@container">
+      <div className={cx('grid grid-cols-1 gap-x-6 gap-y-5', columnClasses[columns], className)}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export default function FormSection({ title, description, columns = 2, className = '', children }) {
   return (
     <div className={className}>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-brand-700">{title}</h3>
-      <div className={cx('grid grid-cols-1 gap-4', columnClasses[columns])}>{children}</div>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      {description && <p className="mt-0.5 text-sm text-ink-muted">{description}</p>}
+      <FieldGrid columns={columns} className="mt-4">
+        {children}
+      </FieldGrid>
     </div>
   )
 }

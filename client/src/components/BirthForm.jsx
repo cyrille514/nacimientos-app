@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Field, FormSection, Input, Plus, Select, Textarea } from './ui'
+import { Field, FormSection, Input, Select, Textarea } from './ui'
 
 const initial = {
   nombre: '',
@@ -19,15 +19,13 @@ const initial = {
 
 export default function BirthForm({ onAdd, medicos }) {
   const [form, setForm] = useState(initial)
-  const [saving, setSaving] = useState(false)
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
-    const ok = await onAdd({
+    const done = await onAdd({
       madre: {
         nombre: form.nombre,
         apellidos: form.apellidos,
@@ -46,12 +44,11 @@ export default function BirthForm({ onAdd, medicos }) {
         pesoG: Number(form.pesoG),
       },
     })
-    setSaving(false)
-    if (ok) setForm(initial)
+    if (done) setForm(initial)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form id="birth-form" onSubmit={handleSubmit} className="space-y-8">
       <FormSection title="Madre">
         <Field label="Nombre">
           <Input name="nombre" value={form.nombre} onChange={handleChange} required />
@@ -73,7 +70,7 @@ export default function BirthForm({ onAdd, medicos }) {
         </Field>
       </FormSection>
 
-      <FormSection title="Parto" className="border-t border-line pt-6">
+      <FormSection title="Parto" className="border-t border-line pt-8">
         <Field label="Fecha y hora">
           <Input type="datetime-local" name="fechaHora" value={form.fechaHora} onChange={handleChange} required />
         </Field>
@@ -95,12 +92,12 @@ export default function BirthForm({ onAdd, medicos }) {
             <option value="instrumental">Instrumental</option>
           </Select>
         </Field>
-        <Field label="Observaciones (opcional)" className="sm:col-span-2">
+        <Field label="Observaciones (opcional)" className="col-span-full">
           <Textarea name="observaciones" rows={3} maxLength={1000} value={form.observaciones} onChange={handleChange} />
         </Field>
       </FormSection>
 
-      <FormSection title="Recién nacido" columns={3} className="border-t border-line pt-6">
+      <FormSection title="Recién nacido" columns={3} className="border-t border-line pt-8">
         <Field label="Nombre (opcional)">
           <Input name="bebeNombre" value={form.bebeNombre} onChange={handleChange} />
         </Field>
@@ -115,12 +112,6 @@ export default function BirthForm({ onAdd, medicos }) {
           <Input type="number" name="pesoG" min="300" max="7000" value={form.pesoG} onChange={handleChange} required />
         </Field>
       </FormSection>
-
-      <div className="flex justify-end border-t border-line pt-6">
-        <Button type="submit" icon={Plus} loading={saving}>
-          Registrar nacimiento
-        </Button>
-      </div>
     </form>
   )
 }

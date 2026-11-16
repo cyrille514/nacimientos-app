@@ -11,8 +11,10 @@ export default function DataField({ label, value, editing = false, className = '
 
   return (
     <div className={className}>
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{label}</p>
-      <p className="mt-1 whitespace-pre-wrap text-sm font-medium text-ink">{value || '—'}</p>
+      <p className="text-xs text-ink-subtle">{label}</p>
+      <p className="mt-1 whitespace-pre-wrap break-words text-sm font-medium text-ink">
+        {value || '—'}
+      </p>
     </div>
   )
 }

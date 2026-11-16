@@ -11,12 +11,16 @@
   --color-brand-800: #115e59;
 
   /* Neutros */
-  --color-canvas: #f6f8fa;
+  --color-canvas: #f7f8f9;
   --color-surface: #ffffff;
-  --color-line: #e2e8f0;
-  --color-ink: #0f172a;
-  --color-ink-muted: #475569;
-  --color-ink-subtle: #64748b;
+  --color-line: #e3e7ea;
+  --color-ink: #0e1726;
+  --color-ink-muted: #445063;
+  --color-ink-subtle: #5f6b7a;
+
+  /* Barra lateral */
+  --color-sidebar: #0a1a19;
+  --color-sidebar-muted: #8fa5a2;
 
   /* Estados */
   --color-success-50: #f0fdf4;
@@ -36,12 +40,29 @@
   /* Radios y sombras */
   --radius-control: 0.5rem;
   --radius-card: 0.75rem;
-  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-  --shadow-pop: 0 20px 40px -12px rgb(15 23 42 / 0.35);
+  --shadow-card: 0 1px 2px 0 rgb(14 23 38 / 0.04);
+  --shadow-pop: 0 24px 48px -12px rgb(14 23 38 / 0.28);
 }
 
 @layer base {
   body {
     @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: "cv11";
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes sheet-in {
+    from { opacity: 0; transform: translateX(1.5rem); }
+  }
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(0.5rem) scale(0.98); }
+  }
+
+  dialog[open].sheet { animation: sheet-in 0.2s ease-out; }
+  dialog[open].modal { animation: modal-in 0.15s ease-out; }
+  dialog::backdrop { animation: fade-in 0.2s ease-out; }
 }

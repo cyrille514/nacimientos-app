@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Alert, Baby, Button, Card, Field, Input } from '../components/ui'
+import { Alert, Button, Card, Field, Input, Logo } from '../components/ui'
 
 export default function Login() {
   const { user, login } = useAuth()
@@ -28,13 +28,11 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-dvh items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-card bg-brand-700 text-white shadow-card">
-            <Baby size={26} />
-          </span>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <Logo className="h-11 w-11 rounded-xl" />
+          <h1 className="mt-5 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
             Gestión de Nacimientos
           </h1>
           <p className="mt-1 text-sm text-ink-muted">Inicia sesión para continuar</p>

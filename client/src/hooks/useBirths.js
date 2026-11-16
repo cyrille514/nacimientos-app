@@ -53,5 +53,7 @@ export default function useBirths(filters = {}) {
     }
   }
 
-  return { births, loading, error, add, remove }
+  const clearError = () => setError(null)
+
+  return { births, loading, error, add, remove, clearError }
 }

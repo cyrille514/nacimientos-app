@@ -10,14 +10,16 @@ export function Table({ children }) {
 
 export function THead({ children }) {
   return (
-    <thead className="border-b border-line bg-slate-50 text-xs uppercase tracking-wide text-ink-subtle">
+    <thead className="border-b border-line bg-slate-50/80 text-xs text-ink-subtle">
       <tr>{children}</tr>
     </thead>
   )
 }
 
 export function Th({ className = '', children }) {
-  return <th className={cx('px-4 py-3 font-semibold', className)}>{children}</th>
+  return (
+    <th className={cx('px-4 py-3 font-medium first:pl-5 last:pr-5', className)}>{children}</th>
+  )
 }
 
 export function TBody({ children }) {
@@ -29,5 +31,9 @@ export function Tr({ children }) {
 }
 
 export function Td({ className = '', children }) {
-  return <td className={cx('px-4 py-3 align-middle text-ink', className)}>{children}</td>
+  return (
+    <td className={cx('px-4 py-3 align-middle text-ink first:pl-5 last:pr-5', className)}>
+      {children}
+    </td>
+  )
 }

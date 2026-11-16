@@ -1,15 +1,10 @@
-export default function StatCard({ label, value, icon: Icon, hint }) {
+export default function StatCard({ label, value, hint }) {
   return (
-    <div className="rounded-card border border-line bg-surface p-5 shadow-card">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-ink-muted">{label}</p>
-        {Icon && (
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-brand-50 text-brand-700">
-            <Icon size={18} />
-          </span>
-        )}
-      </div>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-ink">{value}</p>
+    <div className="min-w-0 rounded-card border border-line bg-surface p-4 shadow-card sm:p-5">
+      <p className="text-sm text-ink-muted">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums text-ink sm:text-3xl">
+        {value}
+      </p>
       {hint && <p className="mt-1 text-xs text-ink-subtle">{hint}</p>}
     </div>
   )

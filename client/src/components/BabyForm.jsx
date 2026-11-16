@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Field, Input, Select } from './ui'
+import { Button, Field, FieldGrid, FormActions, Input, Select } from './ui'
 
 const toForm = (b) => ({
   nombre: b?.nombre ?? '',
@@ -36,8 +36,8 @@ export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'G
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <FieldGrid columns={3}>
         <Field label="Nombre (opcional)">
           <Input name="nombre" value={form.nombre} onChange={handleChange} />
         </Field>
@@ -60,24 +60,22 @@ export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'G
         <Field label="Talla (cm)">
           <Input type="number" name="tallaCm" min="20" max="70" step="0.1" value={form.tallaCm} onChange={handleChange} />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Apgar 1'">
-            <Input type="number" name="apgar1" min="0" max="10" value={form.apgar1} onChange={handleChange} />
-          </Field>
-          <Field label="Apgar 5'">
-            <Input type="number" name="apgar5" min="0" max="10" value={form.apgar5} onChange={handleChange} />
-          </Field>
-        </div>
-      </div>
+        <Field label="Apgar 1'">
+          <Input type="number" name="apgar1" min="0" max="10" value={form.apgar1} onChange={handleChange} />
+        </Field>
+        <Field label="Apgar 5'">
+          <Input type="number" name="apgar5" min="0" max="10" value={form.apgar5} onChange={handleChange} />
+        </Field>
+      </FieldGrid>
 
-      <div className="flex gap-3">
+      <FormActions>
+        <Button variant="secondary" onClick={onCancel} disabled={saving}>
+          Cancelar
+        </Button>
         <Button type="submit" loading={saving}>
           {submitLabel}
         </Button>
-        <Button variant="secondary" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
+      </FormActions>
     </form>
   )
 }
