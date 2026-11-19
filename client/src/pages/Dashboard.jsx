@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom'
 import useBirths from '../hooks/useBirths'
-import { PARTO, formatDateTime } from '../constants/labels'
+import { PARTO } from '../constants/labels'
+import { formatDateTime } from '../utils/dates'
+import { computeBirthStats } from '../utils/birthStats'
+import { ChevronRight } from 'lucide-react';
 import {
-  Alert,
   Baby,
   Badge,
   Button,
   Card,
   EmptyState,
+  Feedback,
   PageHeader,
   Spinner,
   StatCard,
@@ -15,32 +18,24 @@ import {
 
 export default function Dashboard() {
   const { births, loading, error } = useBirths()
-
-  const bebes = births.flatMap((b) => b.recienNacidos)
-  const ninas = bebes.filter((r) => r.sexo === 'F').length
-  const ninos = bebes.filter((r) => r.sexo === 'M').length
-  const cesareas = births.filter((b) => b.tipoParto === 'cesarea').length
-  const pctCesareas = births.length ? Math.round((cesareas / births.length) * 100) : 0
-  const pesoMedio = bebes.length
-    ? Math.round(bebes.reduce((s, r) => s + r.pesoG, 0) / bebes.length)
-    : 0
+  const stats = computeBirthStats(births)
   const recientes = births.slice(0, 5)
 
   return (
     <>
       <PageHeader title="Panel" description="Resumen de la actividad registrada" />
 
-      {error && <Alert className="mb-6">{error}</Alert>}
+      <Feedback error={error} />
 
       {loading ? (
         <Spinner />
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            <StatCard label="Partos" value={births.length} hint={`${bebes.length} recién nacidos`} />
-            <StatCard label="Niñas / Niños" value={`${ninas} / ${ninos}`} />
-            <StatCard label="Cesáreas" value={cesareas} hint={`${pctCesareas}% de los partos`} />
-            <StatCard label="Peso medio" value={`${pesoMedio} g`} />
+            <StatCard label="Partos" value={stats.partos} hint={`${stats.bebes} recién nacidos`} />
+            <StatCard label="Niñas / Niños" value={`${stats.ninas} / ${stats.ninos}`} />
+            <StatCard label="Cesáreas" value={stats.cesareas} hint={`${stats.pctCesareas}% de los partos`} />
+            <StatCard label="Peso medio" value={`${stats.pesoMedio} g`} />
           </div>
 
           <Card
@@ -76,6 +71,7 @@ export default function Dashboard() {
                       <span className="shrink-0 text-sm tabular-nums text-ink-muted">
                         {b.recienNacidos.length} {b.recienNacidos.length === 1 ? 'bebé' : 'bebés'}
                       </span>
+                      <ChevronRight size={16} className="shrink-0 text-slate-400" />
                     </Link>
                   </li>
                 ))}
@@ -87,4 +83,3 @@ export default function Dashboard() {
     </>
   )
 }
-

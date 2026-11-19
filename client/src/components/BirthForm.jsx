@@ -1,50 +1,19 @@
 import { useState } from 'react'
-import { Field, FormSection, Input, Select, Textarea } from './ui'
+import { PARTO, SEXO } from '../constants/labels'
+import { EMPTY_BIRTH_FORM } from '../utils/birthMappers'
+import { Field, FormSection, Input, Options, Select, Textarea } from './ui'
 
-const initial = {
-  nombre: '',
-  apellidos: '',
-  documentoId: '',
-  fechaNacimiento: '',
-  telefono: '',
-  direccion: '',
-  medicoId: '',
-  fechaHora: '',
-  tipoParto: 'vaginal',
-  observaciones: '',
-  bebeNombre: '',
-  sexo: 'F',
-  pesoG: '',
-}
-
-export default function BirthForm({ onAdd, medicos }) {
-  const [form, setForm] = useState(initial)
+// Solo recoge los valores; onSubmit(form) devuelve true si se guardó.
+export default function BirthForm({ onSubmit, medicos }) {
+  const [form, setForm] = useState(EMPTY_BIRTH_FORM)
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const done = await onAdd({
-      madre: {
-        nombre: form.nombre,
-        apellidos: form.apellidos,
-        documentoId: form.documentoId,
-        fechaNacimiento: form.fechaNacimiento,
-        telefono: form.telefono.trim(),
-        direccion: form.direccion.trim(),
-      },
-      medicoId: form.medicoId,
-      fechaHora: new Date(form.fechaHora).toISOString(),
-      tipoParto: form.tipoParto,
-      observaciones: form.observaciones.trim(),
-      recienNacido: {
-        nombre: form.bebeNombre,
-        sexo: form.sexo,
-        pesoG: Number(form.pesoG),
-      },
-    })
-    if (done) setForm(initial)
+    const done = await onSubmit(form)
+    if (done) setForm(EMPTY_BIRTH_FORM)
   }
 
   return (
@@ -87,9 +56,7 @@ export default function BirthForm({ onAdd, medicos }) {
         </Field>
         <Field label="Tipo de parto">
           <Select name="tipoParto" value={form.tipoParto} onChange={handleChange}>
-            <option value="vaginal">Vaginal</option>
-            <option value="cesarea">Cesárea</option>
-            <option value="instrumental">Instrumental</option>
+            <Options map={PARTO} />
           </Select>
         </Field>
         <Field label="Observaciones (opcional)" className="col-span-full">
@@ -103,9 +70,7 @@ export default function BirthForm({ onAdd, medicos }) {
         </Field>
         <Field label="Sexo">
           <Select name="sexo" value={form.sexo} onChange={handleChange}>
-            <option value="F">Niña</option>
-            <option value="M">Niño</option>
-            <option value="I">Indeterminado</option>
+            <Options map={SEXO} />
           </Select>
         </Field>
         <Field label="Peso (g)">

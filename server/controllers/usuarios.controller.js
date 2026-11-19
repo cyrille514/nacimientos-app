@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js'
 import { AppError } from '../utils/AppError.js'
+import { UUID } from '../utils/uuid.js'
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const BAN = '876000h' // ~100 años: equivale a desactivar la cuenta
 
 const checkId = (id) => {

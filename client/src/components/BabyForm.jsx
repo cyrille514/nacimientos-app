@@ -1,20 +1,11 @@
 import { useState } from 'react'
-import { Button, Field, FieldGrid, FormActions, Input, Select } from './ui'
+import { ESTADO_BEBE, SEXO } from '../constants/labels'
+import { babyToForm } from '../utils/babyMappers'
+import { Button, Field, FieldGrid, FormActions, Input, Options, Select } from './ui'
 
-const toForm = (b) => ({
-  nombre: b?.nombre ?? '',
-  sexo: b?.sexo ?? 'F',
-  pesoG: b?.pesoG ?? '',
-  tallaCm: b?.tallaCm ?? '',
-  apgar1: b?.apgar1 ?? '',
-  apgar5: b?.apgar5 ?? '',
-  estado: b?.estado ?? 'vivo',
-})
-
-const num = (v) => (v === '' || v === null ? null : Number(v))
-
+// Solo recoge los valores; onSubmit(form) los entrega tal cual.
 export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'Guardar' }) {
-  const [form, setForm] = useState(toForm(initial))
+  const [form, setForm] = useState(() => babyToForm(initial))
   const [saving, setSaving] = useState(false)
 
   const handleChange = (e) =>
@@ -23,15 +14,7 @@ export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'G
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    await onSubmit({
-      nombre: form.nombre.trim(),
-      sexo: form.sexo,
-      pesoG: Number(form.pesoG),
-      tallaCm: num(form.tallaCm),
-      apgar1: num(form.apgar1),
-      apgar5: num(form.apgar5),
-      estado: form.estado,
-    })
+    await onSubmit(form)
     setSaving(false)
   }
 
@@ -43,15 +26,12 @@ export default function BabyForm({ initial, onSubmit, onCancel, submitLabel = 'G
         </Field>
         <Field label="Sexo">
           <Select name="sexo" value={form.sexo} onChange={handleChange}>
-            <option value="F">Niña</option>
-            <option value="M">Niño</option>
-            <option value="I">Indeterminado</option>
+            <Options map={SEXO} />
           </Select>
         </Field>
         <Field label="Estado">
           <Select name="estado" value={form.estado} onChange={handleChange}>
-            <option value="vivo">Vivo</option>
-            <option value="fallecido">Fallecido</option>
+            <Options map={ESTADO_BEBE} />
           </Select>
         </Field>
         <Field label="Peso (g)">

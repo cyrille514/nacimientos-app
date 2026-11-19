@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isStrongPassword, passwordRules } from '../utils/password'
 import { Alert, Button, Check, Field, Input, KeyRound, Modal, ModalFooter, cx } from './ui'
 
 function PasswordForm({ loading, error, onSubmit, onCancel }) {
@@ -6,15 +7,9 @@ function PasswordForm({ loading, error, onSubmit, onCancel }) {
   const [confirm, setConfirm] = useState('')
   const [show, setShow] = useState(false)
 
-  const rules = [
-    { ok: password.length >= 8, label: 'Mínimo 8 caracteres' },
-    { ok: /[a-z]/.test(password), label: 'Una minúscula' },
-    { ok: /[A-Z]/.test(password), label: 'Una mayúscula' },
-    { ok: /\d/.test(password), label: 'Un número' },
-  ]
-  const valid = rules.every((r) => r.ok)
+  const rules = passwordRules(password)
   const mismatch = confirm !== '' && password !== confirm
-  const canSubmit = valid && confirm !== '' && !mismatch && !loading
+  const canSubmit = isStrongPassword(password) && confirm !== '' && !mismatch && !loading
   const type = show ? 'text' : 'password'
 
   const handleSubmit = (e) => {

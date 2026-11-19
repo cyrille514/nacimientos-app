@@ -1,75 +1,34 @@
-import { useState, useEffect } from 'react'
-import useBirths from '../hooks/useBirths'
-import { getMedicos } from '../services/birthService'
-import BirthForm from '../components/BirthForm'
 import BirthFilters from '../components/BirthFilters'
+import BirthForm from '../components/BirthForm'
 import BirthTable from '../components/BirthTable'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { Alert, Button, FormActions, PageHeader, Plus, Sheet } from '../components/ui'
-import { formatDate } from '../constants/labels'
-
-const emptyFilters = { q: '', desde: '', hasta: '', medicoId: '', tipoParto: '' }
-
-// Convierte las fechas del formulario a ISO, en hora local del navegador
-const toApi = (f) => ({
-  q: f.q.trim(),
-  medicoId: f.medicoId,
-  tipoParto: f.tipoParto,
-  desde: f.desde ? new Date(`${f.desde}T00:00:00`).toISOString() : '',
-  hasta: f.hasta ? new Date(`${f.hasta}T23:59:59.999`).toISOString() : '',
-})
+import { Button, Feedback, FormSheet, PageHeader, Plus } from '../components/ui'
+import useBirthFilters from '../hooks/useBirthFilters'
+import useBirths from '../hooks/useBirths'
+import useDialogFlow from '../hooks/useDialogFlow'
+import useFeedback from '../hooks/useFeedback'
+import useMedicos from '../hooks/useMedicos'
+import { formatDate } from '../utils/dates'
 
 export default function Births() {
-  const [medicos, setMedicos] = useState([])
-  const [filters, setFilters] = useState(emptyFilters)
-  const [applied, setApplied] = useState(toApi(emptyFilters))
-  const [creating, setCreating] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [ok, setOk] = useState('')
-  const [toDelete, setToDelete] = useState(null)
-  const [deleting, setDeleting] = useState(false)
+  const medicos = useMedicos()
+  const { filters, setFilters, applied, reset, active } = useBirthFilters()
+  const { births, loading, error: loadError, add, remove } = useBirths(applied)
+  const feedback = useFeedback()
 
-  const { births, loading, error, add, remove, clearError } = useBirths(applied)
+  // Alta: los errores se muestran dentro del panel
+  const create = useDialogFlow(async (_, form) => {
+    await add(form)
+    feedback.clear()
+    feedback.setOk('Nacimiento registrado')
+  })
 
-  useEffect(() => {
-    getMedicos()
-      .then((d) => setMedicos(Array.isArray(d) ? d : []))
-      .catch(() => setMedicos([]))
-  }, [])
-
-  // Espera 400 ms tras escribir antes de consultar al servidor
-  useEffect(() => {
-    const t = setTimeout(() => setApplied(toApi(filters)), 400)
-    return () => clearTimeout(t)
-  }, [filters])
-
-  const hayFiltros = Object.values(filters).some(Boolean)
+  // Baja: los errores se muestran en la pantalla
+  const del = useDialogFlow((birth) => feedback.run(() => remove(birth.id)))
 
   const openCreate = () => {
-    clearError()
-    setOk('')
-    setCreating(true)
-  }
-
-  const handleCreate = async (data) => {
-    setSaving(true)
-    const done = await add(data)
-    setSaving(false)
-    if (done) {
-      setCreating(false)
-      setOk('Nacimiento registrado')
-    }
-    return done
-  }
-
-  const askDelete = (id) => setToDelete(births.find((b) => b.id === id) ?? null)
-
-  const confirmDelete = async () => {
-    setDeleting(true)
-    setOk('')
-    await remove(toDelete.id)
-    setDeleting(false)
-    setToDelete(null)
+    feedback.clear()
+    create.openWith()
   }
 
   return (
@@ -84,20 +43,10 @@ export default function Births() {
         }
       />
 
-      {error && !creating && <Alert className="mb-6">{error}</Alert>}
-      {ok && (
-        <Alert tone="success" className="mb-6">
-          {ok}
-        </Alert>
-      )}
+      <Feedback error={loadError || feedback.error} ok={feedback.ok} />
 
       <div className="space-y-4">
-        <BirthFilters
-          filters={filters}
-          onChange={setFilters}
-          onReset={() => setFilters(emptyFilters)}
-          medicos={medicos}
-        />
+        <BirthFilters filters={filters} onChange={setFilters} onReset={reset} medicos={medicos} />
 
         <p className="text-sm text-ink-muted">
           {loading
@@ -106,47 +55,39 @@ export default function Births() {
         </p>
 
         <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-          <BirthTable births={births} onDelete={askDelete} filtered={hayFiltros} />
+          <BirthTable births={births} onDelete={del.openWith} filtered={active} />
         </div>
       </div>
 
-      <Sheet
-        open={creating}
-        onClose={() => setCreating(false)}
-        dismissible={!saving}
+      <FormSheet
+        open={create.open}
+        onClose={create.close}
+        busy={create.busy}
+        error={create.error}
         title="Nuevo nacimiento"
         description="Datos de la madre, del parto y del recién nacido"
-        footer={
-          <FormActions>
-            <Button variant="secondary" onClick={() => setCreating(false)} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button type="submit" form="birth-form" icon={Plus} loading={saving}>
-              Registrar nacimiento
-            </Button>
-          </FormActions>
-        }
+        formId="birth-form"
+        submitLabel="Registrar nacimiento"
+        submitIcon={Plus}
       >
-        {error && <Alert className="mb-5">{error}</Alert>}
-        {/* Se monta solo al abrir: los campos se vacían cada vez */}
-        {creating && <BirthForm onAdd={handleCreate} medicos={medicos} />}
-      </Sheet>
+        <BirthForm onSubmit={create.submit} medicos={medicos} />
+      </FormSheet>
 
       <ConfirmDialog
-        open={toDelete !== null}
+        open={del.open}
         title="Eliminar nacimiento"
         message={
-          toDelete
-            ? `¿Eliminar el nacimiento de ${toDelete.madre} del ${formatDate(
-                toDelete.fechaHora
+          del.target
+            ? `¿Eliminar el nacimiento de ${del.target.madre} del ${formatDate(
+                del.target.fechaHora
               )}? Se eliminarán también sus recién nacidos. Esta acción no se puede deshacer.`
             : ''
         }
         confirmLabel="Eliminar"
         danger
-        loading={deleting}
-        onConfirm={confirmDelete}
-        onCancel={() => setToDelete(null)}
+        loading={del.busy}
+        onConfirm={() => del.submit()}
+        onCancel={del.close}
       />
     </>
   )

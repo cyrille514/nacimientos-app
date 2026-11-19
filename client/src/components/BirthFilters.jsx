@@ -1,7 +1,17 @@
 import { useState } from 'react'
-import { Badge, Button, Field, Input, Select, cx } from './ui'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
-
+import { PARTO } from '../constants/labels'
+import { SlidersHorizontal } from 'lucide-react';
+import {
+  Badge,
+  Button,
+  Field,
+  Input,
+  Options,
+  Search,
+  Select,
+  X,
+  cx,
+} from './ui'
 
 export default function BirthFilters({ filters, onChange, onReset, medicos }) {
   const [open, setOpen] = useState(false) // solo afecta a móvil
@@ -65,10 +75,7 @@ export default function BirthFilters({ filters, onChange, onReset, medicos }) {
         </Field>
         <Field label="Tipo de parto">
           <Select name="tipoParto" value={filters.tipoParto} onChange={set}>
-            <option value="">Todos</option>
-            <option value="vaginal">Vaginal</option>
-            <option value="cesarea">Cesárea</option>
-            <option value="instrumental">Instrumental</option>
+            <Options map={PARTO} placeholder="Todos" />
           </Select>
         </Field>
       </div>

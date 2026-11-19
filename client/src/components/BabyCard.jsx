@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { SEXO } from '../constants/labels'
+import { ESTADO_BEBE, SEXO } from '../constants/labels'
+import useCertificate from '../hooks/useCertificate'
 import BabyForm from './BabyForm'
 import { Badge, Button, Card, FileDown, Pencil, Trash2 } from './ui'
 
@@ -12,24 +13,10 @@ function Stat({ label, value }) {
   )
 }
 
+// onUpdate(form) devuelve true si se guardó
 export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false)
-  const [generating, setGenerating] = useState(false)
-  const [pdfError, setPdfError] = useState('')
-
-  const downloadCertificate = async () => {
-    setPdfError('')
-    setGenerating(true)
-    try {
-      // Carga diferida: jsPDF solo se descarga al pedir el primer certificado
-      const { generateCertificate } = await import('../utils/certificate.js')
-      generateCertificate(birth, baby, index)
-    } catch {
-      setPdfError('No se pudo generar el certificado')
-    } finally {
-      setGenerating(false)
-    }
-  }
+  const certificate = useCertificate()
 
   if (editing) {
     return (
@@ -38,8 +25,8 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
           initial={baby}
           submitLabel="Guardar"
           onCancel={() => setEditing(false)}
-          onSubmit={async (data) => {
-            const ok = await onUpdate(data)
+          onSubmit={async (form) => {
+            const ok = await onUpdate(form)
             if (ok) setEditing(false)
           }}
         />
@@ -59,7 +46,7 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <p className="break-words font-medium text-ink">{baby.nombre || 'Sin nombre'}</p>
             <Badge tone={vivo ? 'success' : 'neutral'} dot>
-              {vivo ? 'Vivo' : 'Fallecido'}
+              {ESTADO_BEBE[baby.estado]}
             </Badge>
           </div>
           <p className="mt-0.5 text-sm text-ink-muted">{SEXO[baby.sexo]}</p>
@@ -71,7 +58,9 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
             <Stat label="Apgar 5'" value={baby.apgar5 ?? '—'} />
           </dl>
 
-          {pdfError && <p className="mt-2 text-sm text-danger-700">{pdfError}</p>}
+          {certificate.error && (
+            <p className="mt-2 text-sm text-danger-700">{certificate.error}</p>
+          )}
         </div>
       </div>
 
@@ -81,8 +70,8 @@ export default function BabyCard({ birth, baby, index, canDelete, onUpdate, onDe
             variant="secondary"
             size="sm"
             icon={FileDown}
-            loading={generating}
-            onClick={downloadCertificate}
+            loading={certificate.generating}
+            onClick={() => certificate.generate(birth, baby, index)}
             className="flex-1 sm:flex-none"
           >
             Certificado

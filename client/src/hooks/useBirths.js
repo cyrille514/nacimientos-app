@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
-import { getBirths, addBirth, deleteBirth } from '../services/birthService'
+import { useEffect, useState } from 'react'
+import { addBirth, deleteBirth, getBirths } from '../services/birthService'
+import { buildCreateBirthPayload } from '../utils/birthMappers'
 
+// Lista de nacimientos con filtros. `error` es solo el de la carga.
 export default function useBirths(filters = {}) {
   const [births, setBirths] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,29 +33,16 @@ export default function useBirths(filters = {}) {
     }
   }, [key, reload])
 
-  const add = async (birth) => {
-    try {
-      setError(null)
-      await addBirth(birth)
-      setReload((n) => n + 1) // recarga respetando los filtros activos
-      return true
-    } catch (e) {
-      setError(e.message)
-      return false
-    }
+  // Recibe los valores del formulario; lanza un Error si falla
+  const add = async (form) => {
+    await addBirth(buildCreateBirthPayload(form))
+    setReload((n) => n + 1) // recarga respetando los filtros activos
   }
 
   const remove = async (id) => {
-    try {
-      setError(null)
-      await deleteBirth(id)
-      setBirths((prev) => prev.filter((b) => b.id !== id))
-    } catch (e) {
-      setError(e.message)
-    }
+    await deleteBirth(id)
+    setBirths((prev) => prev.filter((b) => b.id !== id))
   }
 
-  const clearError = () => setError(null)
-
-  return { births, loading, error, add, remove, clearError }
+  return { births, loading, error, add, remove }
 }
